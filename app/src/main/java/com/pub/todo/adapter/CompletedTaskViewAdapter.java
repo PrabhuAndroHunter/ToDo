@@ -53,25 +53,28 @@ public class CompletedTaskViewAdapter extends RecyclerView.Adapter <CompletedTas
     @Override
     public void onBindViewHolder(final MyViewAdapter holder, final int position) {
         final Task currentTask = taskList.get(position);
-        holder.mTitleTv.setText(currentTask.getTitle());    // set name
-        holder.mDescriptionTv.setText(currentTask.getDescription());  // set phoneNumber
-        holder.mDateTv.setText(currentTask.getDate());  // set doteofbirth
-        holder.mDateHeaderTv.setText(currentTask.getDate());
+        // set values to all views
+        holder.mTitleTv.setText(currentTask.getTitle());    // set Title
+        holder.mDescriptionTv.setText(currentTask.getDescription());  // set Decripton
+        holder.mDateTv.setText(currentTask.getDate());  // set Date
+        holder.mDateHeaderTv.setText(currentTask.getDate()); // set DateHeader
+
+        // check whether the task is completed or not
         if (currentTask.isTaskCompleted()) {
-            holder.mStatusBtn.setImageResource(R.drawable.complete);
+            holder.mStatusBtn.setImageResource(R.drawable.complete);  // if completed set (R.drawable.complete) this image
         } else {
-            holder.mStatusBtn.setImageResource(R.drawable.incomplete);
+            holder.mStatusBtn.setImageResource(R.drawable.incomplete); // if incompleted set (R.drawable.incomplete) this image
         }
 
+        // Set longclick listener
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 Log.d(TAG, "onLongClick: ");
                 setPosition(holder.getAdapterPosition());
-                if (currentTask.isTaskCompleted())
-                    dbHelper.deleteTask(currentTask.getId());
-                else
-                    dbHelper.changeTaskStatus(currentTask.getId(), true);
+                // When long click event happen Delete that Task
+                dbHelper.deleteTask(currentTask.getId());
+                // After Deleting refresh Records and UI
                 refreshUI();
                 return true;
             }
@@ -100,28 +103,35 @@ public class CompletedTaskViewAdapter extends RecyclerView.Adapter <CompletedTas
 
         public MyViewAdapter(View itemView) {
             super(itemView);
+            // init all views
             mTitleTv = (TextView) itemView.findViewById(R.id.text_view_title);
             mDescriptionTv = (TextView) itemView.findViewById(R.id.text_view_description);
             mDateTv = (TextView) itemView.findViewById(R.id.text_view_date);
             mDateHeaderTv = (TextView) itemView.findViewById(R.id.date_header);
             mStatusBtn = (ImageButton) itemView.findViewById(R.id.image_button_status);
 
-            Typeface face = Typeface.createFromAsset(context.getAssets(),
+            // set Custom fonts
+            Typeface Roboto_Thin = Typeface.createFromAsset(context.getAssets(),
                     "fonts/Roboto-Thin.ttf");
-            mDescriptionTv.setTypeface(face);
+            mDescriptionTv.setTypeface(Roboto_Thin);
         }
     }
 
-    public void updateTaskList(List <Task> taskList) {
-        this.taskList = taskList;
-    }
-
+    /*
+    *
+    * This method will Delete current records and get fresh records from the database
+    * and refresh the UI
+    *
+    * */
     public void refreshUI() {
         taskList.clear();
         taskList = dbHelper.getCompletedTaskList();
         if (taskList.size() == 0) {
-            ((CompletedTaskActivity) context).showStatusText();
+            ((CompletedTaskActivity) context).showStatusText(true);
+        } else {
+            ((CompletedTaskActivity) context).showStatusText(false);
         }
+
         ((CompletedTaskActivity) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -130,17 +140,4 @@ public class CompletedTaskViewAdapter extends RecyclerView.Adapter <CompletedTas
         });
     }
 
-    class StringDateComparator implements Comparator <String> {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-
-        public int compare(String lhs, String rhs) {
-            int output = 0;
-            try {
-                output = dateFormat.parse(lhs).compareTo(dateFormat.parse(rhs));
-            } catch (Exception e) {
-                Log.e(TAG, "compare: " + e.getMessage());
-            }
-            return output;
-        }
-    }
 }

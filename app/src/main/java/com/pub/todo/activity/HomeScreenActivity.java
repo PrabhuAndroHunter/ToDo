@@ -38,36 +38,44 @@ public class HomeScreenActivity extends AppCompatActivity {
     private TaskViewAdapter taskViewAdapter;
     private String title, description, date;
     private long exitTime;
-    private int year;
-    private int month;
-    private int day;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // initialise layout file (.xml)
         setContentView(R.layout.activity_home_screen);
-        dbHelper = CommonUtilities.getDBObject(this);
+        Log.d(TAG, "onCreate: ");
+        // init Recyclerview And Textview
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_View_employee);
         mStatusTv = (TextView) findViewById(R.id.textview_no_result);
         dbHelper = CommonUtilities.getDBObject(this); // get database reference
+        // create TaskAdapter instance
         taskViewAdapter = new TaskViewAdapter(this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new RecyclerViewItemDecorator(this, 0));
-        mRecyclerView.setAdapter(taskViewAdapter); // set adapter
+        mRecyclerView.setAdapter(taskViewAdapter); // set adapter to recycleview
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         int count = dbHelper.getFullCount(Constants.TASK_TABLE, null);
-        if (count == 0) { // check for record count
-            mStatusTv.setVisibility(View.VISIBLE); // if 0 then make 'no records' text as visible
+        /*
+        *
+        * check for record count
+        * if 0  --> then make 'no records' text as visible
+        * if records found --> then make 'no records' text as Invisible
+        *
+        * */
+
+        if (count == 0) {
+            mStatusTv.setVisibility(View.VISIBLE);
         } else {
             mStatusTv.setVisibility(View.INVISIBLE);
         }
-        taskViewAdapter.refreshUI();
+        taskViewAdapter.refreshUI(); // refreshUI with fresh records
     }
 
     @Override
@@ -97,13 +105,21 @@ public class HomeScreenActivity extends AppCompatActivity {
                 dialog.setContentView(R.layout.add_dialog);
                 // Set dialog title
                 dialog.setTitle("New Task");
-
+                // get all view references
                 mtitleEdt = (EditText) dialog.findViewById(R.id.edit_text_title);
                 mdescriptionEdt = (EditText) dialog.findViewById(R.id.edit_text_description);
                 mSaveBtn = (Button) dialog.findViewById(R.id.button_add);
                 mCancelBtn = (Button) dialog.findViewById(R.id.button_cancle);
                 mDatePicker = (DatePicker) dialog.findViewById(R.id.datePicker);
                 long now = System.currentTimeMillis() - 1000;
+                /*
+                * Note :  Restricting user to set min date as current date because
+                *         New Tasks need to done in current date or in future days
+                *         so There is no meaning to give past day option
+                *
+                *         "mDatePicker.setMinDate(now);"
+                *
+                * */
                 mDatePicker.setMinDate(now);
                 dialog.setCancelable(false);
                 dialog.setCanceledOnTouchOutside(false);
@@ -118,14 +134,15 @@ public class HomeScreenActivity extends AppCompatActivity {
                         date = mDatePicker.getDayOfMonth() + "-" + mDatePicker.getMonth() + 1 + "-" + mDatePicker.getYear();
                         Log.d(TAG, "onClick: value" + title + description + date);
                         if (validateAndSave()) {            // if all values are current and save in DB
+                            // After successful insertion refresh UI
                             mStatusTv.setVisibility(View.INVISIBLE);
                             taskViewAdapter.refreshUI();
-                            dialog.dismiss();
+                            dialog.dismiss();  // close dialog window
                         }
-
                     }
                 });
 
+                // set onclick listener to cancel button
                 mCancelBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -133,8 +150,11 @@ public class HomeScreenActivity extends AppCompatActivity {
                     }
                 });
                 break;
-
+                /*
+                * Second option menu item
+                * */
             case R.id.completed_task:
+                // Start new Activity
                 Intent intent = new Intent(this, CompletedTaskActivity.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -143,7 +163,7 @@ public class HomeScreenActivity extends AppCompatActivity {
         return true;
     }
 
-    // this method will check all fields are having values or not
+    // This method will check all fields are having values or not
     private boolean validateAndSave() {
         if (validate(title, mtitleEdt, "Please enter Title"))
             if (validate(description, mdescriptionEdt, "Please Enter Description")) {
@@ -155,17 +175,29 @@ public class HomeScreenActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        long result = dbHelper.insertContentVals(Constants.TASK_TABLE, contentValues);
-                        Log.d(TAG, "run: " + result);
+                        /*
+                        * save records to database with new Thread
+                        * because database operation may take longer time
+                        *
+                        * */
+                        dbHelper.insertContentVals(Constants.TASK_TABLE, contentValues);
                     }
                 }).start();
+
+                // show toast
                 Toast.makeText(getApplicationContext(), "Task Added", Toast.LENGTH_SHORT).show();
                 return true;
             }
         return false;
     }
 
-    // this method will check whether the fields are having values or not, if not return false
+    /*
+    *
+    * This method will check whether the fields are having values or not,
+    * if not --> set error on respective view and return false
+    *
+    * */
+
     private boolean validate(String value, EditText view, String error) {
         if (value.equalsIgnoreCase("")) {
             view.setError(error);

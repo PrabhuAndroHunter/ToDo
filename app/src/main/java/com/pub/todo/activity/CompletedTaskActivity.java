@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -34,41 +35,29 @@ public class CompletedTaskActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // initialise layout file (.xml)
         setContentView(R.layout.activity_completed_task);
-        dbHelper = CommonUtilities.getDBObject(this);
+        Log.d(TAG, "onCreate: ");
+        // init Recyclerview And Textview
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_View_employee);
         mStatusTv = (TextView) findViewById(R.id.textview_no_result);
-        dbHelper = CommonUtilities.getDBObject(this); // get database reference
-        getSupportActionBar().setTitle("Completed Task"); //  set tittle
+        // get database reference
+        dbHelper = CommonUtilities.getDBObject(this);
+        getSupportActionBar().setTitle("Completed Task"); //  set actionbar tittle
+        // create CompletedTaskViewAdapter  instance
         completedTaskViewAdapter = new CompletedTaskViewAdapter(this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new RecyclerViewItemDecorator(this, 0));
-        mRecyclerView.setAdapter(completedTaskViewAdapter); // set adapter
-
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Snackbar.make(findViewById(R.id.layout_completed_task), "Long Press to Delete Task",
-                        Snackbar.LENGTH_LONG)
-                        .show();
-            }
-        }, 1000);
+        mRecyclerView.setAdapter(completedTaskViewAdapter); // set adapter to recycleview
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        taskList = dbHelper.getCompletedTaskList();
-        if (taskList.size() == 0) { // check for record count
-            mStatusTv.setVisibility(View.VISIBLE); // if 0 then make 'no records' text as visible
-        } else {
-            mStatusTv.setVisibility(View.INVISIBLE);
-            completedTaskViewAdapter.updateTaskList(taskList); // update new records to adapter and update Ui
-            completedTaskViewAdapter.refreshUI();
-        }
+        // refresh UI
+        completedTaskViewAdapter.refreshUI();
     }
 
     @Override
@@ -86,7 +75,26 @@ public class CompletedTaskActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
-    public void showStatusText() {
-        mStatusTv.setVisibility(View.VISIBLE);
+    /*
+    *
+    * This method will Show/Hide "NO COMPLETED TASK" Text based on record count
+    * Show snackbar with 1 sec delay so that user can understand clearly
+    * This Snack bar will show only if there is completed tasks list
+    *
+    * */
+    public void showStatusText(boolean show) {
+        if (show)
+            mStatusTv.setVisibility(View.VISIBLE);
+        else {
+            mStatusTv.setVisibility(View.INVISIBLE);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Snackbar.make(findViewById(R.id.layout_completed_task), "Long Press to Delete Task",
+                            Snackbar.LENGTH_LONG)
+                            .show();
+                }
+            }, 1000);
+        }
     }
 }

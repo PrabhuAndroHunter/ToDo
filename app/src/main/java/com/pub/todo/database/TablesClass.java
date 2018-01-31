@@ -25,14 +25,14 @@ public class TablesClass extends SQLiteOpenHelper {
     Context context;
 
     public TablesClass(Context context, String DatabaseName, String nullColumnHack, int databaseVersion) {
-//        super(context, DATABASE_NAME, null, Constants.DATABASE_VERSION);
-        super(context, Environment.getExternalStorageDirectory()
+        super(context, DATABASE_NAME, null, Constants.DATABASE_VERSION);
+        /*super(context, Environment.getExternalStorageDirectory()
                 + File.separator + "PRABHU"
                 + File.separator + DATABASE_NAME, null, 1);
         SQLiteDatabase.openOrCreateDatabase(Environment.getExternalStorageDirectory()
                 + File.separator + "PRABHU"
                 + File.separator + DATABASE_NAME, null);
-        this.context = context;
+        this.context = context;*/
     }
 
     @Override

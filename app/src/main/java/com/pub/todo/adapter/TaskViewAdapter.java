@@ -19,7 +19,6 @@ import com.pub.todo.activity.HomeScreenActivity;
 import com.pub.todo.R;
 import com.pub.todo.database.DBHelper;
 import com.pub.todo.model.Task;
-import com.pub.todo.model.TaskManager;
 import com.pub.todo.utils.CommonUtilities;
 import com.pub.todo.utils.Constants;
 
@@ -27,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -45,8 +43,6 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
     private List <Task> taskList = new ArrayList <Task>();
     private List <Task> unSortedTaskList = new ArrayList <Task>();
     private List <String> datesList;
-    private List <TaskManager> taskManagerList = new ArrayList <TaskManager>();
-    private HashMap <String, ArrayList <Task>> hashTaskList = new HashMap <String, ArrayList <Task>>();
     private int position;
 
     public TaskViewAdapter(Context context) {
@@ -63,21 +59,24 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
     @Override
     public void onBindViewHolder(final MyViewAdapter holder, final int position) {
         final Task currentTask = taskList.get(position);
+        // set values to all views
         holder.mTitleTv.setText(currentTask.getTitle());    // set title
         holder.mDescriptionTv.setText(currentTask.getDescription());  // set Description
         holder.mDateTv.setText(currentTask.getDate());  // set date
         holder.mDateHeader.setText(currentTask.getDate());
 
+        // check whether the task is completed or not
         if (currentTask.isTaskCompleted()) {
-            holder.mStatusBtn.setImageResource(R.drawable.complete);
+            holder.mStatusBtn.setImageResource(R.drawable.complete); // if completed set (R.drawable.complete) this image
         } else {
-            holder.mStatusBtn.setImageResource(R.drawable.incomplete);
+            holder.mStatusBtn.setImageResource(R.drawable.incomplete); // if incompleted set (R.drawable.incomplete) this image
         }
 
+        // set on listitem click listener
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                // when this event happen show dialog with prestored values
                 showDialogue(currentTask);
             }
         });
@@ -142,7 +141,7 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         dialog.setContentView(R.layout.add_dialog);
         // Set dialog title
         dialog.setTitle("Update Task");
-
+        // Get all view references
         mtitleEdt = (EditText) dialog.findViewById(R.id.edit_text_title);
         mdescriptionEdt = (EditText) dialog.findViewById(R.id.edit_text_description);
         mUpdateBtn = (Button) dialog.findViewById(R.id.button_add);
@@ -150,9 +149,19 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         mCancelBtn = (Button) dialog.findViewById(R.id.button_cancle);
         mDatePicker = (DatePicker) dialog.findViewById(R.id.datePicker);
         long now = System.currentTimeMillis() - 1000;
+       /*
+        * Note :  Restricting user to set min date as current date because
+        *         New Tasks need to done in current date or in future days
+        *         so There is no meaning to give past day option
+        *
+        *         "mDatePicker.setMinDate(now);"
+        *
+        * */
         mDatePicker.setMinDate(now);
         mtitleEdt.setHint(task.getTitle());
+        mtitleEdt.setText(task.getTitle());   // Set Title
         mdescriptionEdt.setHint(task.getDescription());
+        mdescriptionEdt.setText(task.getDescription()); // Set Description
         final String[] newDate = task.getDate().split("-");   // need to update date in dialog
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
@@ -174,6 +183,7 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
             }
         });
 
+        // set onclick listener to Cancel button
         mCancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -182,6 +192,7 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         });
     }
 
+    // This method will check all fields are having values or not
     private boolean validateAndSave(final Task task) {
         if (validate(task)) {
             final ContentValues contentValues = new ContentValues();
@@ -191,31 +202,35 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    long result = dbHelper.updateRecords(task.getId(), contentValues);
+                     /*
+                        * Update records to database with new Thread
+                        * because database operation may take longer time
+                        *
+                        * */
+                    dbHelper.updateRecords(task.getId(), contentValues);
                 }
             }).start();
         }
         return true;
     }
 
-    // this method will check whether the fields are having values or not if not return false
+    // This method will check whether the fields are having values or not if not return false
     private boolean validate(Task task) {
-        if (title.equalsIgnoreCase("")) {
-            title = task.getTitle();
-        }
-        else {
+        if (title.equalsIgnoreCase("")) {  // If Titlefield is emplty the take old value
+            title = task.getTitle(); //
+        } else {
             task.setTitle(title);
         }
 
-        if (description.equalsIgnoreCase("")) {
+        if (description.equalsIgnoreCase("")) { // If Description field is emplty the take old value
             description = task.getDescription();
-        }else {
+        } else {
             task.setDescription(description);
         }
         return true;
     }
 
-    private void lightRefreshUI(){
+    private void lightRefreshUI() {
         ((HomeScreenActivity) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -225,25 +240,24 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
     }
 
     public void refreshUI() {
+        // clear current values
         taskList.clear();
         unSortedTaskList.clear();
-
+        // get fresh recods from DB
         unSortedTaskList = dbHelper.getTaskList();
         datesList = dbHelper.getDistinctDates();
-
+        // Sort dates in Ascending order
         Collections.sort(datesList, new DateAscComparator());
 
+        // Sort Task records in Ascending order based on date
         for (String date : datesList) {
-            List <Task> myTask = new ArrayList <Task>();
             for (Task task : unSortedTaskList) {
-                if (date.equalsIgnoreCase(task.getDate())) {
+                if (date.equalsIgnoreCase(task.getDate()))
                     taskList.add(task);
-                    myTask.add(task);
-                }
             }
-            taskManagerList.add(new TaskManager(date, myTask));
         }
 
+        // refresh UI
         ((HomeScreenActivity) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -252,6 +266,11 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         });
     }
 
+    /*
+    *
+    * This class helps to sort date in Ascending order
+    *
+    * */
     public class DateAscComparator implements Comparator <String> {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         int n = 0;
@@ -262,7 +281,6 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
             } catch (Exception e) {
                 Log.e(TAG, "compare: " + e.getMessage());
             }
-
             return n;
         }
     }
