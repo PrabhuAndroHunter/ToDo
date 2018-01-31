@@ -173,11 +173,16 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
                 // get all values
                 title = mtitleEdt.getText().toString();
                 description = mdescriptionEdt.getText().toString();
-                date = mDatePicker.getDayOfMonth() + "-" + mDatePicker.getMonth() + 1 + "-" + mDatePicker.getYear();
+                int day = mDatePicker.getDayOfMonth();
+                int month = mDatePicker.getMonth();
+                int year = mDatePicker.getYear();
+                month = month + 1;
+                date = day + "-" + month + "-" + year;
                 Log.d(TAG, "onClick: value" + title + description + date);
                 if (validateAndSave(task)) {            // if all values are current and save in DB
 //                            mStatusTv.setVisibility(View.INVISIBLE);
                     lightRefreshUI();
+                    refreshUI();
                     dialog.dismiss();
                 }
             }
@@ -216,7 +221,7 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
 
     // This method will check whether the fields are having values or not if not return false
     private boolean validate(Task task) {
-        if (title.equalsIgnoreCase("")) {  // If Titlefield is emplty the take old value
+        if (title.equalsIgnoreCase("")) {  // If Title field is emplty the take old value
             title = task.getTitle(); //
         } else {
             task.setTitle(title);
@@ -227,6 +232,8 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         } else {
             task.setDescription(description);
         }
+
+        task.setDate(date);
         return true;
     }
 

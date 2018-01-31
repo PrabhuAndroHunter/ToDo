@@ -131,7 +131,11 @@ public class HomeScreenActivity extends AppCompatActivity {
                         // get all values
                         title = mtitleEdt.getText().toString();
                         description = mdescriptionEdt.getText().toString();
-                        date = mDatePicker.getDayOfMonth() + "-" + mDatePicker.getMonth() + 1 + "-" + mDatePicker.getYear();
+                        int day = mDatePicker.getDayOfMonth();
+                        int month = mDatePicker.getMonth();
+                        int year = mDatePicker.getYear();
+                        month = month + 1;
+                        date = day + "-" + month + "-" + year;
                         Log.d(TAG, "onClick: value" + title + description + date);
                         if (validateAndSave()) {            // if all values are current and save in DB
                             // After successful insertion refresh UI
