@@ -148,21 +148,15 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
         mUpdateBtn.setText("Update");
         mCancelBtn = (Button) dialog.findViewById(R.id.button_cancle);
         mDatePicker = (DatePicker) dialog.findViewById(R.id.datePicker);
-        long now = System.currentTimeMillis() - 1000;
-       /*
-        * Note :  Restricting user to set min date as current date because
-        *         New Tasks need to done in current date or in future days
-        *         so There is no meaning to give past day option
-        *
-        *         "mDatePicker.setMinDate(now);"
-        *
-        * */
-        mDatePicker.setMinDate(now);
-        mtitleEdt.setHint(task.getTitle());
         mtitleEdt.setText(task.getTitle());   // Set Title
-        mdescriptionEdt.setHint(task.getDescription());
         mdescriptionEdt.setText(task.getDescription()); // Set Description
-        final String[] newDate = task.getDate().split("-");   // need to update date in dialog
+        String[] newDate = task.getDate().split("-");
+
+        int day = Integer.parseInt(newDate[0]);
+        int month = Integer.parseInt(newDate[1]);
+        month = month - 1;  // month starts from 0 so it will be always +1 and -1
+        int year = Integer.parseInt(newDate[2]);
+        mDatePicker.updateDate(year, month, day);   // set date
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
