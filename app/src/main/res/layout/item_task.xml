@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="5dp"
+        android:elevation="3dp"
+        card_view:cardCornerRadius="5dp"
+        card_view:cardElevation="@dimen/cardview_default_elevation">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/date_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:background="@color/colorLightPink"
+                android:gravity="center_horizontal"
+                android:text="Date"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp"
+                android:typeface="monospace" />
+
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/date_header"
+                android:layout_marginLeft="5dp"
+                android:layout_toLeftOf="@+id/image_button_status"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_view_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleX="1"
+                    android:text="Title"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:typeface="monospace" />
+
+                <TextView
+                    android:id="@+id/text_view_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleX="1"
+                    android:text="Description"
+                    android:textSize="18sp"
+                    />
+
+                <TextView
+                    android:id="@+id/text_view_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleX="1"
+                    android:text="Dateofbirth"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/image_button_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerInParent="true"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/incomplete"
+                android:backgroundTint="@color/colorBlack" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</RelativeLayout>
