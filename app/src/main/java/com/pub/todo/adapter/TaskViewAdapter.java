@@ -14,6 +14,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pub.todo.activity.HomeScreenActivity;
 import com.pub.todo.R;
@@ -77,7 +78,11 @@ public class TaskViewAdapter extends RecyclerView.Adapter <TaskViewAdapter.MyVie
             @Override
             public void onClick(View v) {
                 // when this event happen show dialog with prestored values
-                showDialogue(currentTask);
+                if (currentTask.isTaskCompleted()) {
+                    Toast.makeText(context, "Task Already Completed", Toast.LENGTH_SHORT).show();
+                } else {
+                    showDialogue(currentTask);
+                }
             }
         });
 
